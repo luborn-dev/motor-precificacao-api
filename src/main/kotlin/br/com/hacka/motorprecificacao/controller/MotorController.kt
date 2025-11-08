@@ -1,28 +1,66 @@
 package br.com.hacka.motorprecificacao.controller
 
 import br.com.hacka.motorprecificacao.dto.MotorDTO
-import br.com.hacka.motorprecificacao.service.MotorIaService
-import org.springframework.http.HttpStatus
+import br.com.hacka.motorprecificacao.dto.MotorResponse
+import br.com.hacka.motorprecificacao.service.MotorPrecificacaoService
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
-// Controlador responsável por consultar taxas e cálculos via motor.
-
+/**
+ * Controller responsável por consultar taxas de processamento via motor de IA.
+ *
+ * Endpoints:
+ * - POST /api/motor/taxas - Consultar taxas baseado no perfil da empresa
+ *
+ * Exemplo de payload:
+ * ```json
+ * {
+ *   "endereco": {
+ *     "cep": "01310100",
+ *     "logradouro": "Avenida Paulista",
+ *     "complemento": "",
+ *     "bairro": "Bela Vista",
+ *     "localidade": "São Paulo",
+ *     "uf": "SP"
+ *   },
+ *   "faturamentoMensal": "50000.00",
+ *   "atividadePrincipal": [
+ *     {
+ *       "code": "6201502",
+ *       "text": "Desenvolvimento de software"
+ *     }
+ *   ]
+ * }
+ * ```
+ */
 @RestController
 @RequestMapping("/api/motor")
-class MotorIaController(private val motorIaService: MotorIaService) {
+class MotorController(private val motorPrecificacaoService: MotorPrecificacaoService) {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    /**
+     * Consulta as taxas de processamento baseado no perfil da empresa.
+     *
+     * @param request DTO com dados da empresa (endereço, faturamento, atividades)
+     * @return ResponseEntity contendo as taxas de débito, crédito e voucher
+     *
+     * @throws Exception em caso de erro no processamento (500)
+     */
     @PostMapping("/taxas")
-    fun consultarTaxas(@RequestBody request: MotorDTO): ResponseEntity<Any> {
-        return try {
-            // Chama o serviço para consultar as taxas
-            val response = motorIaService.consultarTaxasIA(request)
-            ResponseEntity.ok(response) // Retorna o DTO da resposta com o código 200 (OK)
-        } catch (e: Exception) {
-            // Em caso de erro, retorna uma resposta de erro com o código 500 (Internal Server Error)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro Interno no Servidor: " + e);
-        }
+    fun consultarTaxas(@RequestBody request: MotorDTO): ResponseEntity<MotorResponse> {
+        logger.info("Requisição recebida para consultar taxas do motor IA")
+        logger.debug("Dados da requisição: ${request.endereco.cidade}, Faturamento: ${request.faturamentoMensal}")
+
+        val response = motorPrecificacaoService.consultarTaxasIA(request)
+
+        logger.info("Taxas consultadas com sucesso - Débito: ${response.debito.size}, Crédito: ${response.credito.size}")
+
+        return ResponseEntity.ok(response)
     }
 }
 

@@ -1,8 +1,13 @@
 package br.com.hacka.motorprecificacao.dto
 
-// Classe que representa a atividade principal de uma empresa com código e descrição. CNAE
-
+/**
+ * DTO que representa a atividade principal de uma empresa com código e descrição.
+ *
+ * Segue a classificação CNAE (Classificação Nacional de Atividades Econômicas).
+ */
 data class AtividadePrincipal(
+    /** Código CNAE da atividade */
     val code: String,
-    val text: String,
+    /** Descrição da atividade */
+    val text: String
 )

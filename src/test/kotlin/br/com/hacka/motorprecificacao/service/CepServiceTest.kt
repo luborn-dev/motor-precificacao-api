@@ -1,5 +1,8 @@
 package br.com.hacka.motorprecificacao.service
 
+import br.com.hacka.motorprecificacao.exception.InvalidCepException
+import br.com.hacka.motorprecificacao.exception.CepNotFoundException
+import br.com.hacka.motorprecificacao.exception.ExternalApiException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -11,7 +14,10 @@ class CepServiceTest {
 
     @BeforeEach
     fun setUp() {
-        cepService = CepService()
+        cepService = CepService(
+            apiUrl = "https://viacep.com.br/ws",
+            timeoutSeconds = 10
+        )
     }
 
     @Test
@@ -47,7 +53,7 @@ class CepServiceTest {
         val cepInvalido = "0131010"
 
         // Act & Assert
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidCepException> {
             cepService.consultarCep(cepInvalido)
         }
     }
@@ -58,7 +64,7 @@ class CepServiceTest {
         val cepInvalido = "0131010A"
 
         // Act & Assert
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidCepException> {
             cepService.consultarCep(cepInvalido)
         }
     }
@@ -69,6 +75,7 @@ class CepServiceTest {
         val cepInexistente = "99999999"
 
         // Act & Assert
+        // Pode lançar CepNotFoundException ou ExternalApiException conforme a resposta da API
         assertThrows<Exception> {
             cepService.consultarCep(cepInexistente)
         }

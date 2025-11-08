@@ -3,70 +3,144 @@ package br.com.hacka.motorprecificacao.service
 
 import br.com.hacka.motorprecificacao.dto.CnpjDTO
 import br.com.hacka.motorprecificacao.dto.CnpjResponse
+import br.com.hacka.motorprecificacao.exception.CnpjNotFoundException
+import br.com.hacka.motorprecificacao.exception.ExternalApiException
+import br.com.hacka.motorprecificacao.exception.InvalidCnpjException
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
-// Serviço responsável por consultar e validar CNPJs via API externa da ReceitaWS.
-
+/**
+ * Serviço responsável por consultar e validar CNPJs via API externa (ReceitaWS).
+ *
+ * Funcionalidades:
+ * - Consulta de CNPJ com validação
+ * - Limpeza de formatação de CNPJ
+ * - Conversão de DTOs
+ * - Tratamento de erros específicos
+ */
 @Service
-class CnpjService {
+class CnpjService(
+    @Value("\${receitaws.api.url:https://www.receitaws.com.br/v1/cnpj}")
+    private val apiUrl: String,
+    @Value("\${receitaws.api.timeout:10}")
+    private val timeoutSeconds: Long
+) {
+
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .writeTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(timeoutSeconds, TimeUnit.SECONDS)
+        .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
+        .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
         .build()
 
     private val gson = Gson()
-    private val API_URL = "https://www.receitaws.com.br/v1/cnpj"
 
+    companion object {
+        private const val CNPJ_PATTERN = "\\d{14}"
+        private const val CNPJ_CLEAN_PATTERN = "[^0-9]"
+    }
+
+    /**
+     * Consulta informações de empresa a partir de um CNPJ.
+     *
+     * @param cnpj CNPJ a ser consultado (com ou sem formatação)
+     * @return CnpjResponse contendo os dados da empresa
+     * @throws InvalidCnpjException se o CNPJ for inválido
+     * @throws CnpjNotFoundException se o CNPJ não for encontrado na API
+     * @throws ExternalApiException se houver erro ao comunicar com a API
+     */
     fun consultarCnpj(cnpj: String): CnpjResponse {
-        val cnpjLimpo = cnpj.replace(".", "").replace("/", "").replace("-", "").trim()
+        logger.debug("Iniciando consulta de CNPJ: $cnpj")
+
+        val cnpjLimpo = normalizarCnpj(cnpj)
 
         if (!isValidCnpj(cnpjLimpo)) {
-            throw IllegalArgumentException("CNPJ inválido: $cnpj. Deve conter 14 dígitos.")
+            logger.warn("CNPJ inválido fornecido: $cnpj")
+            throw InvalidCnpjException(cnpj)
         }
 
-        try {
+        return consultarCnpjNaApi(cnpjLimpo)
+    }
+
+    /**
+     * Remove caracteres especiais do CNPJ, mantendo apenas dígitos.
+     */
+    private fun normalizarCnpj(cnpj: String): String {
+        return cnpj.replace(Regex(CNPJ_CLEAN_PATTERN), "").trim()
+    }
+
+    /**
+     * Valida se o CNPJ possui 14 dígitos.
+     */
+    private fun isValidCnpj(cnpj: String): Boolean {
+        return cnpj.matches(Regex(CNPJ_PATTERN))
+    }
+
+    /**
+     * Faz a requisição à API ReceitaWS.
+     */
+    private fun consultarCnpjNaApi(cnpjLimpo: String): CnpjResponse {
+        return try {
             val request = Request.Builder()
-                .url("$API_URL/$cnpjLimpo")
+                .url("$apiUrl/$cnpjLimpo")
                 .addHeader("Accept", "application/json")
                 .build()
 
-            val empresa = client.newCall(request).execute().use { response ->
+            client.newCall(request).execute().use { response ->
+                val statusCode = response.code
+
                 if (!response.isSuccessful) {
-                    throw Exception("Erro ao consultar CNPJ: ${response.code}")
+                    logger.error("Erro ao consultar CNPJ na API. Status: $statusCode")
+                    throw ExternalApiException(statusCode, "ReceitaWS", "Status HTTP $statusCode")
                 }
 
-                val body = response.body?.string() ?: throw Exception("Resposta vazia da API")
+                val body = response.body?.string()
+                    ?: throw ExternalApiException(statusCode, "ReceitaWS", "Resposta vazia")
 
-                // API retorna:
-                // { "status": "ERROR" } quando não encontra
-                if (body.contains("\"status\":\"ERROR\"")) {
-                    throw Exception("CNPJ não encontrado: $cnpj")
-                }
-
-                val cnpjDTO = gson.fromJson(body, CnpjDTO::class.java)
-                cnpjDTO.toResponse()
+                processarResposta(cnpjLimpo, body)
             }
-
-            return empresa
-
+        } catch (e: CnpjNotFoundException) {
+            // Relançar exceção específica de não encontrado
+            logger.info("CNPJ não encontrado: $cnpjLimpo")
+            throw e
+        } catch (e: ExternalApiException) {
+            logger.error("Erro na comunicação com ReceitaWS", e)
+            throw e
         } catch (e: Exception) {
-            if (e.message?.contains("CNPJ") == true) {
-                throw e
-            }
-            throw Exception("Erro ao consultar CNPJ na API externa: ${e.message}")
+            logger.error("Erro inesperado ao consultar CNPJ", e)
+            throw ExternalApiException(null, "ReceitaWS", e.message ?: "Erro desconhecido")
         }
     }
 
-    private fun isValidCnpj(cnpj: String): Boolean {
-        return cnpj.matches(Regex("\\d{14}"))
+    /**
+     * Processa a resposta da API, verificando se o CNPJ foi encontrado.
+     */
+    private fun processarResposta(cnpjLimpo: String, body: String): CnpjResponse {
+        // API retorna { "status": "ERROR" } quando não encontra
+        if (body.contains("\"status\":\"ERROR\"")) {
+            logger.info("CNPJ não encontrado na API: $cnpjLimpo")
+            throw CnpjNotFoundException(cnpjLimpo)
+        }
+
+        return try {
+            val cnpjDTO = gson.fromJson(body, CnpjDTO::class.java)
+            cnpjDTO.toResponse()
+        } catch (e: JsonSyntaxException) {
+            logger.error("Erro ao desserializar resposta da API", e)
+            throw ExternalApiException(200, "ReceitaWS", "Resposta inválida")
+        }
     }
 
+    /**
+     * Converte CnpjDTO em CnpjResponse.
+     */
     private fun CnpjDTO.toResponse(): CnpjResponse {
         return CnpjResponse(
             cnpj = this.cnpj,
