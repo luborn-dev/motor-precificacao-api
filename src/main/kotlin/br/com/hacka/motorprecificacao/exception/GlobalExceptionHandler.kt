@@ -1,5 +1,7 @@
 package br.com.hacka.motorprecificacao.exception
 
+// Classe que trata exceções globais e retorna respostas padronizadas de erro para a API.
+
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler

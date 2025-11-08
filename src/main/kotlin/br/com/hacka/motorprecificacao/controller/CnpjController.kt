@@ -1,27 +1,29 @@
 package br.com.hacka.motorprecificacao.controller
 
-import br.com.hacka.motorprecificacao.dto.EnderecoResponse
-import br.com.hacka.motorprecificacao.service.CepService
-import org.springframework.http.HttpStatus
+import br.com.hacka.motorprecificacao.service.CnpjService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RestController
-@RequestMapping("/api/cep")
-class CepController(private val cepService: CepService) {
+//cControlador responsável por consultar informações de empresas usando o CNPJ.
 
-    @GetMapping("/{cep}")
-    fun consultarCep(@PathVariable cep: String): ResponseEntity<EnderecoResponse> {
+@RestController
+@RequestMapping("/api/cnpj")
+class CnpjController(
+    private val cnpjService: CnpjService
+) {
+
+    @GetMapping("/{cnpj}")
+    fun getCnpj(@PathVariable cnpj: String): ResponseEntity<Any> {
         return try {
-            val endereco = cepService.consultarCep(cep)
-            ResponseEntity.ok(endereco)
+            val response = cnpjService.consultarCnpj(cnpj)
+            ResponseEntity.ok(response)
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().build()
         } catch (e: Exception) {
-            ResponseEntity.status(HttpStatus.NOT_FOUND).build()
+            ResponseEntity.badRequest().body(mapOf("erro" to e.message))
         }
     }
 }

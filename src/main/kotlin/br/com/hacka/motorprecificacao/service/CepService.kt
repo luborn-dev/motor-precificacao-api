@@ -1,5 +1,7 @@
 package br.com.hacka.motorprecificacao.service
 
+// Serviço responsável por consultar e validar CEPs via API externa (ViaCEP).
+
 import br.com.hacka.motorprecificacao.dto.EnderecoDTO
 import br.com.hacka.motorprecificacao.dto.EnderecoResponse
 import com.google.gson.Gson

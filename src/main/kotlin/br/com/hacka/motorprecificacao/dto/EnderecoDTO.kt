@@ -2,6 +2,8 @@ package br.com.hacka.motorprecificacao.dto
 
 import com.google.gson.annotations.SerializedName
 
+// DTO que mapeia os dados do endereço retornado por APIs externas de CEP.
+
 data class EnderecoDTO(
     @SerializedName("cep")
     val cep: String,
