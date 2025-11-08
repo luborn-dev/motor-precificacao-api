@@ -24,5 +24,6 @@ class CepController(private val cepService: CepService) {
             ResponseEntity.status(HttpStatus.NOT_FOUND).build()
         }
     }
+
 }
 
