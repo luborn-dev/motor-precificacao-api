@@ -1,6 +1,8 @@
 package br.com.hacka.motorprecificacao.service
 
 import br.com.hacka.motorprecificacao.dto.EnderecoResponse
+import br.com.hacka.motorprecificacao.exception.InvalidCepException
+import br.com.hacka.motorprecificacao.exception.CepNotFoundException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -15,7 +17,10 @@ class CepServiceUnitTest {
 
     @BeforeEach
     fun setUp() {
-        cepService = CepService()
+        cepService = CepService(
+            apiUrl = "https://viacep.com.br/ws",
+            timeoutSeconds = 10
+        )
     }
 
     @Test
@@ -55,7 +60,7 @@ class CepServiceUnitTest {
         val cepInvalido = "0131010"
 
         // Act & Assert
-        val exception = assertThrows<IllegalArgumentException> {
+        val exception = assertThrows<InvalidCepException> {
             cepService.consultarCep(cepInvalido)
         }
         assertEquals("CEP inválido: 0131010. Deve conter 8 dígitos.", exception.message)
@@ -68,7 +73,7 @@ class CepServiceUnitTest {
         val cepInvalido = "013101000"
 
         // Act & Assert
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidCepException> {
             cepService.consultarCep(cepInvalido)
         }
     }
@@ -80,7 +85,7 @@ class CepServiceUnitTest {
         val cepInvalido = "0131010A"
 
         // Act & Assert
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidCepException> {
             cepService.consultarCep(cepInvalido)
         }
     }
@@ -92,6 +97,7 @@ class CepServiceUnitTest {
         val cepInexistente = "99999999"
 
         // Act & Assert
+        // Pode lançar CepNotFoundException ou ExternalApiException conforme resposta da API
         assertThrows<Exception> {
             cepService.consultarCep(cepInexistente)
         }
@@ -139,7 +145,7 @@ class CepServiceUnitTest {
 
         // Assert
         assertEquals("01310-100", resultadoValido.cep)
-        assertThrows<IllegalArgumentException> {
+        assertThrows<InvalidCepException> {
             cepService.consultarCep(cepInvalido)
         }
     }
