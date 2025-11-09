@@ -7,7 +7,7 @@ package br.com.hacka.motorprecificacao.dto
  */
 data class CnpjResponse(
     /** CNPJ da empresa */
-    val cnpj: String,
+    val cnpj: String?,
     /** Razão social */
     val nome: String,
     /** Nome fantasia */

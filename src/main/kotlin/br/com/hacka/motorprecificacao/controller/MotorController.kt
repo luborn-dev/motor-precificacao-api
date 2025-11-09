@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RestController
  * {
  *   "endereco": {
  *     "cep": "01310100",
- *     "logradouro": "Avenida Paulista",
+ *     "rua": "Avenida Paulista",
  *     "complemento": "",
  *     "bairro": "Bela Vista",
- *     "localidade": "São Paulo",
- *     "uf": "SP"
+ *     "cidade": "São Paulo",
+ *     "estado": "SP"
  *   },
  *   "faturamentoMensal": "50000.00",
  *   "atividadePrincipal": [

@@ -46,8 +46,7 @@ class MotorPrecificacaoService(
      * @throws Exception em caso de erro no processamento
      */
     fun consultarTaxasIA(request: MotorDTO): MotorResponse {
-        logger.info("Consultando taxas IA para empresa em ${request.endereco.cidade}")
-        logger.debug("Dados da requisição: faturamento=${request.faturamentoMensal}, atividades=${request.atividadePrincipal.size}")
+
 
         return try {
             // NOTA: Mockando retorno enquanto modelo de IA não está pronto
