@@ -1,5 +1,4 @@
 package br.com.hacka.motorprecificacao.service
-
 import br.com.hacka.motorprecificacao.dto.MotorDTO
 import br.com.hacka.motorprecificacao.dto.MotorResponse
 import br.com.hacka.motorprecificacao.dto.TaxaBandeiraCredito
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
-
 /**
  * Serviço responsável por consultar as taxas calculadas pelo motor de IA.
  *
@@ -27,17 +25,13 @@ class MotorPrecificacaoService(
     @Value("\${motor-ia.api.timeout:10}")
     private val timeoutSeconds: Long
 ) {
-
     private val logger = LoggerFactory.getLogger(javaClass)
-
     private val client = OkHttpClient.Builder()
         .connectTimeout(timeoutSeconds, TimeUnit.SECONDS)
         .readTimeout(timeoutSeconds, TimeUnit.SECONDS)
         .writeTimeout(timeoutSeconds, TimeUnit.SECONDS)
         .build()
-
     private val gson = Gson()
-
     /**
      * Consulta as taxas de processamento baseado no perfil da empresa.
      *
@@ -46,6 +40,8 @@ class MotorPrecificacaoService(
      * @throws Exception em caso de erro no processamento
      */
     fun consultarTaxasIA(request: MotorDTO): MotorResponse {
+        logger.info("Consultando taxas IA para empresa em ${request.endereco.cidade}")
+        logger.debug("Dados da requisição: faturamento=${request.faturamentoMensal}, atividades=${request.atividadePrincipal.size}")
 
 
         return try {
@@ -54,7 +50,6 @@ class MotorPrecificacaoService(
             // 1. Serializar request para JSON
             // 2. Fazer POST para $apiUrl
             // 3. Desserializar resposta em MotorResponse
-
             val response = gerarTaxasSimuladas(request)
             logger.info("Taxas consultadas com sucesso para ${request.endereco.cidade}")
             response
@@ -63,7 +58,6 @@ class MotorPrecificacaoService(
             throw Exception("Erro ao consultar taxas do motor de IA: ${e.message}", e)
         }
     }
-
     /**
      * Gera simulação de taxas conforme especificação de negócio.
      *
@@ -75,7 +69,6 @@ class MotorPrecificacaoService(
      */
     private fun gerarTaxasSimuladas(request: MotorDTO): MotorResponse {
         logger.debug("Gerando taxas simuladas")
-
         return MotorResponse(
             debito = listOf(
                 TaxaBandeiraDebito(bandeira = "VISA", taxa_a_vista = 2.39),

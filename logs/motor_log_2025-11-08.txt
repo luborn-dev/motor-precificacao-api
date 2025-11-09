@@ -1,0 +1,24 @@
+[2025-11-08 21:35:29] Gerando taxas simuladas para Sampa
+[2025-11-08 21:35:29] Taxas consultadas com sucesso para Sampa
+2025-11-08 22:06:02 INFO  [main] b.c.h.m.MotorPrecificacaoApplicationKt - Starting MotorPrecificacaoApplicationKt using Java 21.0.8 with PID 148452 (/home/hck_aregis/Desktop/motor-precificacao-api/build/classes/kotlin/main started by hck_aregis in /home/hck_aregis/Desktop/motor-precificacao-api)
+2025-11-08 22:06:02 DEBUG [main] b.c.h.m.MotorPrecificacaoApplicationKt - Running with Spring Boot v3.5.7, Spring v6.2.12
+2025-11-08 22:06:02 INFO  [main] b.c.h.m.MotorPrecificacaoApplicationKt - No active profile set, falling back to 1 default profile: "default"
+2025-11-08 22:06:02 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-11-08 22:06:02 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-11-08 22:06:02 INFO  [main] o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-11-08 22:06:02 INFO  [main] o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.48]
+2025-11-08 22:06:02 INFO  [main] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-11-08 22:06:02 INFO  [main] o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 594 ms
+2025-11-08 22:06:03 INFO  [main] o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-11-08 22:06:03 INFO  [main] o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-11-08 22:06:03 INFO  [main] b.c.h.m.MotorPrecificacaoApplicationKt - Started MotorPrecificacaoApplicationKt in 1.495 seconds (process running for 1.691)
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] b.c.h.m.controller.MotorController - Requisição recebida para consultar taxas do motor IA
+2025-11-08 22:06:08 DEBUG [http-nio-8080-exec-1] b.c.h.m.controller.MotorController - Dados da requisição: Sampa, Faturamento: 10.000
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] b.c.h.m.s.MotorPrecificacaoService - Consultando taxas IA para empresa em Sampa
+2025-11-08 22:06:08 DEBUG [http-nio-8080-exec-1] b.c.h.m.s.MotorPrecificacaoService - Dados da requisição: faturamento=10.000, atividades=1
+2025-11-08 22:06:08 DEBUG [http-nio-8080-exec-1] b.c.h.m.s.MotorPrecificacaoService - Gerando taxas simuladas
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] b.c.h.m.s.MotorPrecificacaoService - Taxas consultadas com sucesso para Sampa
+2025-11-08 22:06:08 INFO  [http-nio-8080-exec-1] b.c.h.m.controller.MotorController - Taxas consultadas com sucesso - Débito: 3, Crédito: 3
